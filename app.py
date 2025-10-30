@@ -4,6 +4,18 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
+SECRET_KEY = "arbking2025secure"  # your private key
+
+@app.before_request
+def secure_access():
+    # Allow homepage & health check & reset without key
+    if request.path in ["/health", "/", "/reset"]:
+        return
+
+    # Check key match
+    if request.headers.get("X-API-KEY") != SECRET_KEY:
+        return jsonify({"error": "Unauthorized"}), 403
+
 # --- CONFIG ---
 DAILY_MATCH_LIMIT = 12
 STAKE_PER_ARB = 5250
@@ -226,7 +238,7 @@ def reset():
 @app.route("/health")
 def health():
     log = get_daily_log()
-    return f"✅ Running — {log['count']}/{DAILY_MATCH_LIMIT]"
+    return f"✅ Running — {log['count']}/{DAILY_MATCH_LIMIT}"
 
 
 @app.route("/")
